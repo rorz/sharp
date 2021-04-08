@@ -92,6 +92,11 @@ namespace sharp {
    */
   VImage Modulate(VImage image, double const brightness, double const saturation, int const hue);
 
+  /*
+   * Overlay text onto an image
+   */
+  VImage Text(VImage image, std::vector<double> textColor, std::vector<double> textPosition, std::string text, std::string font, std::string fontfile, int const width, int const height, std::string align, bool const justify, int const dpi, int const spacing);
+
 }  // namespace sharp
 
 #endif  // SRC_OPERATIONS_H_

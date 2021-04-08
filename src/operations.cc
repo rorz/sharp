@@ -275,4 +275,67 @@ namespace sharp {
       return image.linear(a, b);
     }
   }
+
+  /*
+   * Draw text onto an image (implementation inspired by @gargsms)
+   */
+  VImage Text(VImage image, std::vector<double> textColor, std::vector<double> textPosition, std::string text, std::string font, std::string fontfile, int const textWidth, int const textHeight, std::string textAlign, bool const textJustify, int const textDpi, int const lineSpacing) {
+    VImage pixel = image.new_from_image(textColor);
+    // Alpha - https://github.com/libvips/libvips/issues/1208
+
+    VImage overlay = VImage::new_memory();
+
+    vips::VOption *option = VImage::option()
+      ->set("font", const_cast<char*>(font.data()))
+      ->set("width", textWidth)
+      ->set("height", textHeight)
+      ->set("align", const_cast<char*>(textAlign.data()))
+      ->set("justify", textJustify)
+      ->set("dpi", textDpi)
+      ->set("spacing", lineSpacing);
+
+    if (fontfile.length() > 0) {
+      option->set("fontfile", const_cast<char*>(fontfile.data()));
+    }
+
+    // If no height / width specified - set to input
+    // Need to factor offset in as well?
+
+    overlay = overlay.text(
+        const_cast<char*>(text.data()),
+        option
+        // "Hello, world!",
+        // VImage::option()
+        //     ->set("font", "sans 32")
+        //     // ->set("fontfile", false)
+        //     // ->set("font", "Kanit Regular 32")
+        //     // ->set("fontfile", "/Users/rorz/sharp/Kanit-Regular.ttf")
+        //     ->set("width", 100)
+        //     ->set("height", 100)
+        //     ->set("align", "left")
+        //     ->set("justify", false)
+        //     ->set("dpi", 300)
+        //     ->set("spacing", 16)
+        // // ->set("font", &font[0u])
+        // // ->set("fontfile", &fontfile[0u])
+        // // ->set("width", width)
+        // // ->set("height", height)
+        // // ->set("align", &align[0u])
+        // // ->set("justify", justify)
+        // // ->set("dpi", dpi)
+        // // ->set("spacing", spacing)
+    );
+    overlay = overlay.embed(
+      textPosition[0], textPosition[1], image.width(), image.height()
+    );
+
+    image = overlay.ifthenelse(
+      pixel,
+      image,
+      VImage::option()
+        ->set("blend", TRUE)
+    );
+
+    return image;
+  }
 }  // namespace sharp

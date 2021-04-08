@@ -196,6 +196,17 @@ struct PipelineBaton {
   VipsForeignDzDepth tileDepth;
   std::string tileId;
   std::unique_ptr<double[]> recombMatrix;
+  std::vector<double> textColor;
+  std::vector<double> textPosition;
+  std::string text;
+  std::string font;
+  std::string fontfile;
+  int textWidth;
+  int textHeight;
+  std::string textAlign;
+  bool textJustify;
+  int textDpi;
+  int lineSpacing;  
 
   PipelineBaton():
     input(nullptr),
@@ -311,7 +322,18 @@ struct PipelineBaton {
     tileAngle(0),
     tileBackground{ 255.0, 255.0, 255.0, 255.0 },
     tileSkipBlanks(-1),
-    tileDepth(VIPS_FOREIGN_DZ_DEPTH_LAST) {}
+    tileDepth(VIPS_FOREIGN_DZ_DEPTH_LAST),
+    textColor{ 0.0, 0.0, 0.0 },
+    textPosition{ 0.0, 0.0 },
+    text(""),
+    font("sans"),
+    fontfile(""),
+    textWidth(-1),
+    textHeight(-1),
+    textAlign("left"),
+    textJustify(false),
+    textDpi(300),
+    lineSpacing(16) {}
 };
 
 #endif  // SRC_PIPELINE_H_

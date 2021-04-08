@@ -623,6 +623,13 @@ class PipelineWorker : public Napi::AsyncWorker {
         }
       }
 
+      // Overlay text onto an image
+      // TODO: extract options from function here instead (like other lib funcs)
+      // Do casting etc
+      if (baton->text.length() > 0) {
+        image = sharp::Text(image, baton->textColor, baton->textPosition, baton->text, baton->font, baton->fontfile, baton->textWidth, baton->textHeight, baton->textAlign, baton->textJustify, baton->textDpi, baton->lineSpacing);
+      }
+
       // Reverse premultiplication after all transformations:
       if (shouldPremultiplyAlpha) {
         image = image.unpremultiply();
@@ -1466,6 +1473,24 @@ Napi::Value pipeline(const Napi::CallbackInfo& info) {
     sharp::AttrAsStr(options, "tileDepth").data()));
   baton->tileCentre = sharp::AttrAsBool(options, "tileCentre");
   baton->tileId = sharp::AttrAsStr(options, "tileId");
+
+  // Text overlay
+  // Local<Object> textColor = Get(options, New("textColor").ToLocalChecked()).ToLocalChecked().As<Object>();
+  // for (int i = 0; i < 3; i++) {
+  //   baton->colors[i] = To<int32_t>(Get(textColor, i).ToLocalChecked()).FromJust();
+  // }
+  // Local<Object> textOffset = Get(options, New("textOffset").ToLocalChecked()).ToLocalChecked().As<Object>();
+  baton->textColor = sharp::AttrAsVectorOfDouble(options, "textColor");
+  baton->textPosition = sharp::AttrAsVectorOfDouble(options, "textPosition");
+  baton->text = sharp::AttrAsStr(options, "text");
+  baton->font = sharp::AttrAsStr(options, "font");
+  baton->fontfile = sharp::AttrAsStr(options, "fontfile");
+  baton->textWidth = sharp::AttrAsInt32(options, "textWidth");
+  baton->textHeight = sharp::AttrAsInt32(options, "textHeight");
+  baton->textAlign = sharp::AttrAsStr(options, "textAlign");
+  baton->textJustify = sharp::AttrAsBool(options, "textJustify");
+  baton->textDpi = sharp::AttrAsInt32(options, "textDpi");
+  baton->lineSpacing = sharp::AttrAsInt32(options, "lineSpacing");
 
   // Force random access for certain operations
   if (baton->input->access == VIPS_ACCESS_SEQUENTIAL) {
