@@ -124,6 +124,23 @@ namespace sharp {
         descriptor->createBackground = AttrAsVectorOfDouble(input, "createBackground");
       }
     }
+    // Create new image with text
+    if (HasAttr(input, "textValue")) {
+      descriptor->textValue = AttrAsStr(input, "textValue");
+      descriptor->textWidth = AttrAsUint32(input, "textWidth");
+      descriptor->textHeight = AttrAsUint32(input, "textHeight");
+      int textAlign = AttrAsUint32(input, "textAlign");
+      descriptor->textAlign = textAlign == 0 ? VIPS_ALIGN_LOW : (textAlign == 1 ? VIPS_ALIGN_CENTRE : VIPS_ALIGN_HIGH);
+      int textVerticalAlign = AttrAsUint32(input, "textVerticalAlign");
+      descriptor->textVerticalAlign = textVerticalAlign == 0 ? VIPS_ALIGN_LOW : (textVerticalAlign == 1 ? VIPS_ALIGN_CENTRE : VIPS_ALIGN_LAST);
+      descriptor->textColor = AttrAsVectorOfDouble(input, "textColor");
+      descriptor->textBackground = AttrAsVectorOfDouble(input, "textBackground");
+      descriptor->textFont = AttrAsStr(input, "textFont");
+      descriptor->textFontfile = AttrAsStr(input, "textFontfile");
+      descriptor->textJustify = AttrAsBool(input, "textJustify");
+      descriptor->textDpi = AttrAsUint32(input, "textDpi");
+      descriptor->textLineSpacing = AttrAsUint32(input, "textLineSpacing");
+    }
     // Limit input images to a given number of pixels, where pixels = width * height
     descriptor->limitInputPixels = AttrAsUint32(input, "limitInputPixels");
     // Allow switch from random to sequential access
@@ -372,6 +389,47 @@ namespace sharp {
           }
           image = VImage::new_matrix(descriptor->createWidth, descriptor->createHeight).new_from_image(background);
         }
+        image.get_image()->Type = VIPS_INTERPRETATION_sRGB;
+        imageType = ImageType::RAW;
+      } else if (descriptor->textValue.length() > 0) {
+        // Create a new image with text
+        VImage textMask = VImage::new_memory();
+        vips::VOption *textOptions = VImage::option()
+          ->set("font", const_cast<char*>(descriptor->textFont.data()))
+          ->set("width", descriptor->textWidth)
+          ->set("align", descriptor->textAlign)
+          ->set("justify", descriptor->textJustify)
+          ->set("dpi", descriptor->textDpi)
+          ->set("spacing", descriptor->textLineSpacing);
+        if (descriptor->textFontfile.length() > 0) {
+          textOptions->set("fontfile", const_cast<char*>(descriptor->textFontfile.data()));
+        }
+        textMask = textMask.text(const_cast<char*>(descriptor->textValue.data()), textOptions);
+        std::vector<double> background = {
+          descriptor->textBackground[0],
+          descriptor->textBackground[1],
+          descriptor->textBackground[2],
+          descriptor->textBackground[3],
+        };
+        bool constrainHeight = descriptor->textHeight > 0;
+        int computedHeight = constrainHeight ? descriptor->textHeight : textMask.height();
+        std::vector<double> embedPos = { 0.0, 0.0 };
+        if (descriptor->textAlign != VIPS_ALIGN_LOW) {
+          embedPos[0] = (descriptor->textWidth - textMask.width()) * (descriptor->textAlign == VIPS_ALIGN_CENTRE ? 0.5 : 1);
+        }
+        if (constrainHeight && (descriptor->textVerticalAlign != VIPS_ALIGN_LOW)) {
+          embedPos[1] = (descriptor->textHeight - textMask.height()) * (descriptor->textVerticalAlign == VIPS_ALIGN_CENTRE ? 0.5 : 1);
+        }
+        textMask = textMask.embed(embedPos[0], embedPos[1], descriptor->textWidth, computedHeight);
+        image = VImage::new_matrix(descriptor->textWidth, computedHeight).new_from_image(background);
+        std::vector<double> color = {
+          descriptor->textColor[0],
+          descriptor->textColor[1],
+          descriptor->textColor[2],
+          descriptor->textColor[3],
+        };
+        VImage colorMask = image.new_from_image(color);
+        image = textMask.ifthenelse(colorMask, image, VImage::option()->set("blend", TRUE));
         image.get_image()->Type = VIPS_INTERPRETATION_sRGB;
         imageType = ImageType::RAW;
       } else {
