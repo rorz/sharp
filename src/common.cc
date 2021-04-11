@@ -393,7 +393,6 @@ namespace sharp {
         imageType = ImageType::RAW;
       } else if (descriptor->textValue.length() > 0) {
         // Create a new image with text
-        VImage textMask = VImage::new_memory();
         vips::VOption *textOptions = VImage::option()
           ->set("font", const_cast<char*>(descriptor->textFont.data()))
           ->set("width", descriptor->textWidth)
@@ -404,7 +403,7 @@ namespace sharp {
         if (descriptor->textFontfile.length() > 0) {
           textOptions->set("fontfile", const_cast<char*>(descriptor->textFontfile.data()));
         }
-        textMask = textMask.text(const_cast<char*>(descriptor->textValue.data()), textOptions);
+        VImage textMask = VImage::new_memory().text(const_cast<char *>(descriptor->textValue.data()), textOptions);
         std::vector<double> background = {
           descriptor->textBackground[0],
           descriptor->textBackground[1],
@@ -421,7 +420,7 @@ namespace sharp {
           embedPos[1] = (descriptor->textHeight - textMask.height()) * (descriptor->textVerticalAlign == VIPS_ALIGN_CENTRE ? 0.5 : 1);
         }
         textMask = textMask.embed(embedPos[0], embedPos[1], descriptor->textWidth, computedHeight);
-        image = VImage::new_matrix(descriptor->textWidth, computedHeight).new_from_image(background);
+        image = textMask.new_from_image(background);
         std::vector<double> color = {
           descriptor->textColor[0],
           descriptor->textColor[1],
