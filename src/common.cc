@@ -129,8 +129,7 @@ namespace sharp {
       descriptor->textValue = AttrAsStr(input, "textValue");
       descriptor->textWidth = AttrAsUint32(input, "textWidth");
       descriptor->textHeight = AttrAsUint32(input, "textHeight");
-      int textAlign = AttrAsUint32(input, "textAlign");
-      descriptor->textAlign = textAlign == 0 ? VIPS_ALIGN_LOW : (textAlign == 1 ? VIPS_ALIGN_CENTRE : VIPS_ALIGN_HIGH);
+      descriptor->textAlign = static_cast<VipsAlign>(vips_enum_from_nick(nullptr, VIPS_TYPE_ALIGN, AttrAsStr(input, "textAlign").data()));
       descriptor->textForeground = AttrAsVectorOfDouble(input, "textForeground");
       descriptor->textBackground = AttrAsVectorOfDouble(input, "textBackground");
       descriptor->textFont = AttrAsStr(input, "textFont");
@@ -407,6 +406,7 @@ namespace sharp {
           textOptions->set("dpi", descriptor->textDpi);
         }
         VImage textMask = VImage::new_memory().text(const_cast<char *>(descriptor->textValue.data()), textOptions);
+        // TODO(@rorz): Optional alpha channel
         std::vector<double> background = {
           descriptor->textBackground[0],
           descriptor->textBackground[1],
@@ -420,6 +420,7 @@ namespace sharp {
         int width = descriptor->textWidth > 0 ? descriptor->textWidth : textMask.width();
         textMask = textMask.embed(xOffset, 0.0, width, textMask.height());
         image = textMask.new_from_image(background);
+        // TODO(@rorz): Optional alpha channel
         std::vector<double> color = {
           descriptor->textForeground[0],
           descriptor->textForeground[1],
