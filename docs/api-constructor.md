@@ -44,6 +44,16 @@ Implements the [stream.Duplex][1] class.
             -   `options.create.noise.type` **[string][5]?** type of generated noise, currently only `gaussian` is supported.
             -   `options.create.noise.mean` **[number][8]?** mean of pixels in generated noise.
             -   `options.create.noise.sigma` **[number][8]?** standard deviation of pixels in generated noise.
+    -   `options.text` **[Object][6]?** describes a new text image to be created.
+        -   `options.text.text` **[string][5]?** text string to render.
+        -   `options.text.font` **[string][5]** font name to render with. (optional, default `"sans"`)
+        -   `options.text.fontfile` **[string][5]?** absolute filesystem path to a font file that can be used by `font`.
+        -   `options.text.width` **[number][8]** integral number of pixels wide. When omitted, can be used with `dpi` to output single-line text images of arbitrary width. (optional, default `0`)
+        -   `options.text.height` **[number][8]** integral number of pixels high. When defined, `dpi` will be ignored and the text will automatically fit the pixel resolution defined by `width` and `height`. Will be ignored if `width` is not specified or set to 0. (optional, default `0`)
+        -   `options.text.align` **[string][5]** text alignment (`'left'`, `'centre'`, `'center'`, `'right'`). (optional, default `'left'`)
+        -   `options.text.justify` **[boolean][7]** set this to true to apply justification to the text. (optional, default `false`)
+        -   `options.text.dpi` **[number][8]** the resolution (size) at which to render the text. Does not take effect if `height` is specified. (optional, default `72`)
+        -   `options.text.spacing` **[number][8]** text line height in points. Will use the font line height if none is specified. (optional, default `0`)
 
 ### Examples
 
