@@ -131,9 +131,7 @@ namespace sharp {
       descriptor->textHeight = AttrAsUint32(input, "textHeight");
       int textAlign = AttrAsUint32(input, "textAlign");
       descriptor->textAlign = textAlign == 0 ? VIPS_ALIGN_LOW : (textAlign == 1 ? VIPS_ALIGN_CENTRE : VIPS_ALIGN_HIGH);
-      int textVerticalAlign = AttrAsUint32(input, "textVerticalAlign");
-      descriptor->textVerticalAlign = textVerticalAlign == 0 ? VIPS_ALIGN_LOW : (textVerticalAlign == 1 ? VIPS_ALIGN_CENTRE : VIPS_ALIGN_LAST);
-      descriptor->textColor = AttrAsVectorOfDouble(input, "textColor");
+      descriptor->textForeground = AttrAsVectorOfDouble(input, "textForeground");
       descriptor->textBackground = AttrAsVectorOfDouble(input, "textBackground");
       descriptor->textFont = AttrAsStr(input, "textFont");
       descriptor->textFontfile = AttrAsStr(input, "textFontfile");
@@ -395,13 +393,18 @@ namespace sharp {
         // Create a new image with text
         vips::VOption *textOptions = VImage::option()
           ->set("font", const_cast<char*>(descriptor->textFont.data()))
-          ->set("width", descriptor->textWidth)
+          ->set("height", descriptor->textHeight)
           ->set("align", descriptor->textAlign)
           ->set("justify", descriptor->textJustify)
-          ->set("dpi", descriptor->textDpi)
           ->set("spacing", descriptor->textLineSpacing);
+        if (descriptor->textWidth > 0) {
+          textOptions->set("width", descriptor->textWidth);
+        }
         if (descriptor->textFontfile.length() > 0) {
           textOptions->set("fontfile", const_cast<char*>(descriptor->textFontfile.data()));
+        }
+        if (descriptor->textDpi > 0) {
+          textOptions->set("dpi", descriptor->textDpi);
         }
         VImage textMask = VImage::new_memory().text(const_cast<char *>(descriptor->textValue.data()), textOptions);
         std::vector<double> background = {
@@ -410,22 +413,18 @@ namespace sharp {
           descriptor->textBackground[2],
           descriptor->textBackground[3],
         };
-        bool constrainHeight = descriptor->textHeight > 0;
-        int computedHeight = constrainHeight ? descriptor->textHeight : textMask.height();
-        std::vector<double> embedPos = { 0.0, 0.0 };
-        if (descriptor->textAlign != VIPS_ALIGN_LOW) {
-          embedPos[0] = (descriptor->textWidth - textMask.width()) * (descriptor->textAlign == VIPS_ALIGN_CENTRE ? 0.5 : 1);
+        int xOffset = 0;
+        if (descriptor->textWidth > 0 && descriptor->textAlign != VIPS_ALIGN_LOW) {
+          xOffset = (descriptor->textWidth - textMask.width()) * (descriptor->textAlign == VIPS_ALIGN_CENTRE ? 0.5 : 1);
         }
-        if (constrainHeight && (descriptor->textVerticalAlign != VIPS_ALIGN_LOW)) {
-          embedPos[1] = (descriptor->textHeight - textMask.height()) * (descriptor->textVerticalAlign == VIPS_ALIGN_CENTRE ? 0.5 : 1);
-        }
-        textMask = textMask.embed(embedPos[0], embedPos[1], descriptor->textWidth, computedHeight);
+        int width = descriptor->textWidth > 0 ? descriptor->textWidth : textMask.width();
+        textMask = textMask.embed(xOffset, 0.0, width, textMask.height());
         image = textMask.new_from_image(background);
         std::vector<double> color = {
-          descriptor->textColor[0],
-          descriptor->textColor[1],
-          descriptor->textColor[2],
-          descriptor->textColor[3],
+          descriptor->textForeground[0],
+          descriptor->textForeground[1],
+          descriptor->textForeground[2],
+          descriptor->textForeground[3],
         };
         VImage colorMask = image.new_from_image(color);
         image = textMask.ifthenelse(colorMask, image, VImage::option()->set("blend", TRUE));

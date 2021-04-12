@@ -72,8 +72,7 @@ namespace sharp {
     int textWidth;
     int textHeight;
     VipsAlign textAlign;
-    VipsAlign textVerticalAlign;
-    std::vector<double> textColor;
+    std::vector<double> textForeground;
     std::vector<double> textBackground;
     std::string textFont;
     std::string textFontfile;
@@ -105,8 +104,7 @@ namespace sharp {
       textWidth(0),
       textHeight(0),
       textAlign(VIPS_ALIGN_LOW),
-      textVerticalAlign(VIPS_ALIGN_LOW),
-      textColor{ 255.0, 255.0, 255.0, 255.0 },
+      textForeground{ 255.0, 255.0, 255.0, 255.0 },
       textBackground{ 0.0, 0.0, 0.0, 255.0 },
       textJustify(FALSE),
       textDpi(0),
