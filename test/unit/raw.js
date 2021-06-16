@@ -7,6 +7,18 @@ const fixtures = require('../fixtures');
 
 describe('Raw pixel data', function () {
   describe('Raw pixel input', function () {
+    it('Empty data', function () {
+      assert.throws(function () {
+        sharp(Buffer.from(''));
+      }, /empty/);
+      assert.throws(function () {
+        sharp(new Uint8Array(0));
+      }, /empty/);
+      assert.throws(function () {
+        sharp(new Uint8ClampedArray(0));
+      }, /empty/);
+    });
+
     it('Missing options', function () {
       assert.throws(function () {
         sharp({ raw: {} });
@@ -91,6 +103,52 @@ describe('Raw pixel data', function () {
               assert.strictEqual(192, info.height);
               assert.strictEqual(4, info.channels);
               fixtures.assertSimilar(fixtures.inputPngOverlayLayer1, data, { threshold: 7 }, done);
+            });
+        });
+    });
+
+    it('RGBA premultiplied', function (done) {
+      // Convert to raw pixel data
+      sharp(fixtures.inputPngSolidAlpha)
+        .resize(256)
+        .raw()
+        .toBuffer(function (err, data, info) {
+          if (err) throw err;
+          assert.strictEqual(256, info.width);
+          assert.strictEqual(192, info.height);
+          assert.strictEqual(4, info.channels);
+
+          const originalData = Buffer.from(data);
+
+          // Premultiply image data
+          for (let i = 0; i < data.length; i += 4) {
+            const alpha = data[i + 3];
+            const norm = alpha / 255;
+
+            if (alpha < 255) {
+              data[i] = Math.round(data[i] * norm);
+              data[i + 1] = Math.round(data[i + 1] * norm);
+              data[i + 2] = Math.round(data[i + 2] * norm);
+            }
+          }
+
+          // Convert back to PNG
+          sharp(data, {
+            raw: {
+              width: info.width,
+              height: info.height,
+              channels: info.channels,
+              premultiplied: true
+            }
+          })
+            .raw()
+            .toBuffer(function (err, data, info) {
+              if (err) throw err;
+              assert.strictEqual(256, info.width);
+              assert.strictEqual(192, info.height);
+              assert.strictEqual(4, info.channels);
+              assert.equal(data.compare(originalData), 0, 'output buffer matches unpremultiplied input buffer');
+              done();
             });
         });
     });
