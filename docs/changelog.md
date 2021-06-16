@@ -4,10 +4,40 @@
 
 Requires libvips v8.10.6
 
-### v0.28.2 - TBD
+### v0.28.3 - 24th May 2021
+
+* Ensure presence of libvips, vendored or global, before invoking node-gyp.
+
+* Skip shrink-on-load for multi-page WebP.
+  [#2714](https://github.com/lovell/sharp/issues/2714)
+
+* Add contrast limiting adaptive histogram equalization (CLAHE) operator.
+  [#2726](https://github.com/lovell/sharp/pull/2726)
+  [@baparham](https://github.com/baparham)
+
+### v0.28.2 - 10th May 2021
+
+* Allow `withMetadata` to set `density`.
+  [#967](https://github.com/lovell/sharp/issues/967)
 
 * Skip shrink-on-load where one dimension <4px.
   [#2653](https://github.com/lovell/sharp/issues/2653)
+
+* Allow escaped proxy credentials.
+  [#2664](https://github.com/lovell/sharp/pull/2664)
+  [@msalettes](https://github.com/msalettes)
+
+* Add `premultiplied` flag for raw pixel data input.
+  [#2685](https://github.com/lovell/sharp/pull/2685)
+  [@mnutt](https://github.com/mnutt)
+
+* Detect empty input and throw a helpful error.
+  [#2687](https://github.com/lovell/sharp/pull/2687)
+  [@JakobJingleheimer](https://github.com/JakobJingleheimer)
+
+* Add install-time flag to skip version compatibility checks.
+  [#2692](https://github.com/lovell/sharp/pull/2692)
+  [@xemle](https://github.com/xemle)
 
 ### v0.28.1 - 5th April 2021
 

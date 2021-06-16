@@ -49,6 +49,7 @@ The following platforms require compilation of both libvips and sharp from sourc
 
 The architecture and platform of Node.js used for `npm install`
 must be the same as the architecture and platform of Node.js used at runtime.
+See the [cross-platform](#cross-platform) section if this is not the case.
 
 When using npm v6 or earlier, the `npm install --unsafe-perm` flag must be used when installing as `root` or a `sudo` user.
 
@@ -69,6 +70,33 @@ which requires Xcode and Python - see
 When this new ARM64 CPU is made freely available
 to open source projects via a CI service
 then prebuilt sharp binaries can also be provided.
+
+## Cross-platform
+
+At `npm install` time, prebuilt binaries are automatically selected for the
+current OS platform and CPU architecture, where available.
+
+The target platform and/or architecture can be manually selected using the following flags.
+
+```sh
+npm install --platform=... --arch=... --arm-version=... sharp
+```
+
+* `--platform`: one of `linux`, `linuxmusl`, `darwin` or `win32`.
+* `--arch`: one of `x64`, `ia32`, `arm` or `arm64`.
+* `--arm-version`: one of `6`, `7` or `8` (`arm` defaults to `6`, `arm64` defaults to `8`).
+* `--sharp-install-force`: skip version compatibility checks.
+
+These values can also be set via environment variables,
+`npm_config_platform`, `npm_config_arch`, `npm_config_arm_version`
+and `SHARP_INSTALL_FORCE` respectively.
+
+For example, if the target machine has a 64-bit ARM CPU and is running Alpine Linux,
+use the following flags:
+
+```sh
+npm install --arch=arm64 --platform=linuxmusl sharp
+```
 
 ## Custom libvips
 
@@ -123,7 +151,7 @@ See the Chinese mirror below for a further example.
 
 ## Chinese mirror
 
-Alibaba provide a mirror site based in China containing binaries for both sharp and libvips.
+A mirror site based in China, provided by Alibaba, contains binaries for both sharp and libvips.
 
 To use this either set the following configuration:
 

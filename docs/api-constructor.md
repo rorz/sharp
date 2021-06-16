@@ -13,47 +13,54 @@ Implements the [stream.Duplex][1] class.
 
 ### Parameters
 
--   `input` **([Buffer][2] \| [Uint8Array][3] \| [Uint8ClampedArray][4] \| [string][5])?** if present, can be
-     a Buffer / Uint8Array / Uint8ClampedArray containing JPEG, PNG, WebP, AVIF, GIF, SVG, TIFF or raw pixel image data, or
-     a String containing the filesystem path to an JPEG, PNG, WebP, AVIF, GIF, SVG or TIFF image file.
-     JPEG, PNG, WebP, AVIF, GIF, SVG, TIFF or raw pixel image data can be streamed into the object when not present.
--   `options` **[Object][6]?** if present, is an Object with optional attributes.
-    -   `options.failOnError` **[boolean][7]** by default halt processing and raise an error when loading invalid images.
-         Set this flag to `false` if you'd rather apply a "best effort" to decode images, even if the data is corrupt or invalid. (optional, default `true`)
-    -   `options.limitInputPixels` **([number][8] \| [boolean][7])** Do not process input images where the number of pixels
-         (width x height) exceeds this limit. Assumes image dimensions contained in the input metadata can be trusted.
-         An integral Number of pixels, zero or false to remove limit, true to use default limit of 268402689 (0x3FFF x 0x3FFF). (optional, default `268402689`)
-    -   `options.sequentialRead` **[boolean][7]** Set this to `true` to use sequential rather than random access where possible.
-         This can reduce memory usage and might improve performance on some systems. (optional, default `false`)
-    -   `options.density` **[number][8]** number representing the DPI for vector images in the range 1 to 100000. (optional, default `72`)
-    -   `options.pages` **[number][8]** number of pages to extract for multi-page input (GIF, WebP, AVIF, TIFF, PDF), use -1 for all pages. (optional, default `1`)
-    -   `options.page` **[number][8]** page number to start extracting from for multi-page input (GIF, WebP, AVIF, TIFF, PDF), zero based. (optional, default `0`)
-    -   `options.subifd` **[number][8]** subIFD (Sub Image File Directory) to extract for OME-TIFF, defaults to main image. (optional, default `-1`)
-    -   `options.level` **[number][8]** level to extract from a multi-level input (OpenSlide), zero based. (optional, default `0`)
-    -   `options.animated` **[boolean][7]** Set to `true` to read all frames/pages of an animated image (equivalent of setting `pages` to `-1`). (optional, default `false`)
-    -   `options.raw` **[Object][6]?** describes raw pixel input image data. See `raw()` for pixel ordering.
-        -   `options.raw.width` **[number][8]?** integral number of pixels wide.
-        -   `options.raw.height` **[number][8]?** integral number of pixels high.
-        -   `options.raw.channels` **[number][8]?** integral number of channels, between 1 and 4.
-    -   `options.create` **[Object][6]?** describes a new image to be created.
-        -   `options.create.width` **[number][8]?** integral number of pixels wide.
-        -   `options.create.height` **[number][8]?** integral number of pixels high.
-        -   `options.create.channels` **[number][8]?** integral number of channels, either 3 (RGB) or 4 (RGBA).
-        -   `options.create.background` **([string][5] \| [Object][6])?** parsed by the [color][9] module to extract values for red, green, blue and alpha.
-        -   `options.create.noise` **[Object][6]?** describes a noise to be created.
-            -   `options.create.noise.type` **[string][5]?** type of generated noise, currently only `gaussian` is supported.
-            -   `options.create.noise.mean` **[number][8]?** mean of pixels in generated noise.
-            -   `options.create.noise.sigma` **[number][8]?** standard deviation of pixels in generated noise.
-    -   `options.text` **[Object][6]?** describes a new text image to be created.
-        -   `options.text.text` **[string][5]?** text string to render.
-        -   `options.text.font` **[string][5]** font name to render with. (optional, default `"sans"`)
-        -   `options.text.fontfile` **[string][5]?** absolute filesystem path to a font file that can be used by `font`.
-        -   `options.text.width` **[number][8]** integral number of pixels wide. When omitted, can be used with `dpi` to output single-line text images of arbitrary width. (optional, default `0`)
-        -   `options.text.height` **[number][8]** integral number of pixels high. When defined, `dpi` will be ignored and the text will automatically fit the pixel resolution defined by `width` and `height`. Will be ignored if `width` is not specified or set to 0. (optional, default `0`)
-        -   `options.text.align` **[string][5]** text alignment (`'left'`, `'centre'`, `'center'`, `'right'`). (optional, default `'left'`)
-        -   `options.text.justify` **[boolean][7]** set this to true to apply justification to the text. (optional, default `false`)
-        -   `options.text.dpi` **[number][8]** the resolution (size) at which to render the text. Does not take effect if `height` is specified. (optional, default `72`)
-        -   `options.text.spacing` **[number][8]** text line height in points. Will use the font line height if none is specified. (optional, default `0`)
+*   `input` **([Buffer][2] | [Uint8Array][3] | [Uint8ClampedArray][4] | [string][5])?** if present, can be
+    a Buffer / Uint8Array / Uint8ClampedArray containing JPEG, PNG, WebP, AVIF, GIF, SVG, TIFF or raw pixel image data, or
+    a String containing the filesystem path to an JPEG, PNG, WebP, AVIF, GIF, SVG or TIFF image file.
+    JPEG, PNG, WebP, AVIF, GIF, SVG, TIFF or raw pixel image data can be streamed into the object when not present.
+*   `options` **[Object][6]?** if present, is an Object with optional attributes.
+
+    *   `options.failOnError` **[boolean][7]** by default halt processing and raise an error when loading invalid images.
+        Set this flag to `false` if you'd rather apply a "best effort" to decode images, even if the data is corrupt or invalid. (optional, default `true`)
+    *   `options.limitInputPixels` **([number][8] | [boolean][7])** Do not process input images where the number of pixels
+        (width x height) exceeds this limit. Assumes image dimensions contained in the input metadata can be trusted.
+        An integral Number of pixels, zero or false to remove limit, true to use default limit of 268402689 (0x3FFF x 0x3FFF). (optional, default `268402689`)
+    *   `options.sequentialRead` **[boolean][7]** Set this to `true` to use sequential rather than random access where possible.
+        This can reduce memory usage and might improve performance on some systems. (optional, default `false`)
+    *   `options.density` **[number][8]** number representing the DPI for vector images in the range 1 to 100000. (optional, default `72`)
+    *   `options.pages` **[number][8]** number of pages to extract for multi-page input (GIF, WebP, AVIF, TIFF, PDF), use -1 for all pages. (optional, default `1`)
+    *   `options.page` **[number][8]** page number to start extracting from for multi-page input (GIF, WebP, AVIF, TIFF, PDF), zero based. (optional, default `0`)
+    *   `options.subifd` **[number][8]** subIFD (Sub Image File Directory) to extract for OME-TIFF, defaults to main image. (optional, default `-1`)
+    *   `options.level` **[number][8]** level to extract from a multi-level input (OpenSlide), zero based. (optional, default `0`)
+    *   `options.animated` **[boolean][7]** Set to `true` to read all frames/pages of an animated image (equivalent of setting `pages` to `-1`). (optional, default `false`)
+    *   `options.raw` **[Object][6]?** describes raw pixel input image data. See `raw()` for pixel ordering.
+
+        *   `options.raw.width` **[number][8]?** integral number of pixels wide.
+        *   `options.raw.height` **[number][8]?** integral number of pixels high.
+        *   `options.raw.channels` **[number][8]?** integral number of channels, between 1 and 4.
+        *   `options.raw.premultiplied` **[boolean][7]?** specifies that the raw input has already been premultiplied, set to `true`
+            to avoid sharp premultiplying the image. (optional, default `false`)
+    *   `options.create` **[Object][6]?** describes a new image to be created.
+
+        *   `options.create.width` **[number][8]?** integral number of pixels wide.
+        *   `options.create.height` **[number][8]?** integral number of pixels high.
+        *   `options.create.channels` **[number][8]?** integral number of channels, either 3 (RGB) or 4 (RGBA).
+        *   `options.create.background` **([string][5] | [Object][6])?** parsed by the [color][9] module to extract values for red, green, blue and alpha.
+        *   `options.create.noise` **[Object][6]?** describes a noise to be created.
+
+            *   `options.create.noise.type` **[string][5]?** type of generated noise, currently only `gaussian` is supported.
+            *   `options.create.noise.mean` **[number][8]?** mean of pixels in generated noise.
+            *   `options.create.noise.sigma` **[number][8]?** standard deviation of pixels in generated noise.
+    *   `options.text` **[Object][6]?** describes a new text image to be created.
+
+        *   `options.text.text` **[string][5]?** text string to render.
+        *   `options.text.font` **[string][5]** font name to render with. (optional, default `"sans"`)
+        *   `options.text.fontfile` **[string][5]?** absolute filesystem path to a font file that can be used by `font`.
+        *   `options.text.width` **[number][8]** integral number of pixels wide. When omitted, can be used with `dpi` to output single-line text images of arbitrary width. (optional, default `0`)
+        *   `options.text.height` **[number][8]** integral number of pixels high. When defined, `dpi` will be ignored and the text will automatically fit the pixel resolution defined by `width` and `height`. Will be ignored if `width` is not specified or set to 0. (optional, default `0`)
+        *   `options.text.align` **[string][5]** text alignment (`'left'`, `'centre'`, `'center'`, `'right'`). (optional, default `'left'`)
+        *   `options.text.justify` **[boolean][7]** set this to true to apply justification to the text. (optional, default `false`)
+        *   `options.text.dpi` **[number][8]** the resolution (size) at which to render the text. Does not take effect if `height` is specified. (optional, default `72`)
+        *   `options.text.spacing` **[number][8]** text line height in points. Will use the font line height if none is specified. (optional, default `0`)
 
 ### Examples
 
@@ -130,7 +137,7 @@ await sharp({
 }).toFile('noise.png');
 ```
 
--   Throws **[Error][10]** Invalid parameters
+*   Throws **[Error][10]** Invalid parameters
 
 Returns **[Sharp][11]** 
 

@@ -240,40 +240,38 @@ describe('Image metadata', function () {
       })
   );
 
-  it('GIF via giflib', function (done) {
+  it('GIF', function (done) {
     sharp(fixtures.inputGif).metadata(function (err, metadata) {
       if (err) throw err;
       assert.strictEqual('gif', metadata.format);
       assert.strictEqual('undefined', typeof metadata.size);
       assert.strictEqual(800, metadata.width);
       assert.strictEqual(533, metadata.height);
-      assert.strictEqual(3, metadata.channels);
+      assert.strictEqual(true, [3, 4].includes(metadata.channels)); // libvips 8.11.0 = 4
       assert.strictEqual('uchar', metadata.depth);
       assert.strictEqual('undefined', typeof metadata.density);
       assert.strictEqual('undefined', typeof metadata.chromaSubsampling);
       assert.strictEqual(false, metadata.isProgressive);
       assert.strictEqual(false, metadata.hasProfile);
-      assert.strictEqual(false, metadata.hasAlpha);
       assert.strictEqual('undefined', typeof metadata.orientation);
       assert.strictEqual('undefined', typeof metadata.exif);
       assert.strictEqual('undefined', typeof metadata.icc);
       done();
     });
   });
-  it('GIF grey+alpha via giflib', function (done) {
+  it('GIF grey+alpha', function (done) {
     sharp(fixtures.inputGifGreyPlusAlpha).metadata(function (err, metadata) {
       if (err) throw err;
       assert.strictEqual('gif', metadata.format);
       assert.strictEqual('undefined', typeof metadata.size);
       assert.strictEqual(2, metadata.width);
       assert.strictEqual(1, metadata.height);
-      assert.strictEqual(2, metadata.channels);
+      assert.strictEqual(true, [2, 4].includes(metadata.channels)); // libvips 8.11.0 = 4
       assert.strictEqual('uchar', metadata.depth);
       assert.strictEqual('undefined', typeof metadata.density);
       assert.strictEqual('undefined', typeof metadata.chromaSubsampling);
       assert.strictEqual(false, metadata.isProgressive);
       assert.strictEqual(false, metadata.hasProfile);
-      assert.strictEqual(true, metadata.hasAlpha);
       assert.strictEqual('undefined', typeof metadata.orientation);
       assert.strictEqual('undefined', typeof metadata.exif);
       assert.strictEqual('undefined', typeof metadata.icc);
@@ -322,7 +320,7 @@ describe('Image metadata', function () {
         assert.strictEqual(isProgressive, false);
         assert.strictEqual(pages, 10);
         assert.strictEqual(pageHeight, 285);
-        assert.strictEqual(loop, 3);
+        assert.strictEqual(true, [2, 3].includes(loop)); // libvips 8.11.0 = 2
         assert.deepStrictEqual(delay, [...Array(9).fill(3000), 15000]);
         assert.strictEqual(hasProfile, false);
         assert.strictEqual(hasAlpha, true);
@@ -623,6 +621,44 @@ describe('Image metadata', function () {
     assert.strictEqual(parsedExif.exif.ExposureTime, 0.2);
   });
 
+  it('Set density of JPEG', async () => {
+    const data = await sharp({
+      create: {
+        width: 8,
+        height: 8,
+        channels: 3,
+        background: 'red'
+      }
+    })
+      .withMetadata({
+        density: 300
+      })
+      .jpeg()
+      .toBuffer();
+
+    const { density } = await sharp(data).metadata();
+    assert.strictEqual(density, 300);
+  });
+
+  it('Set density of PNG', async () => {
+    const data = await sharp({
+      create: {
+        width: 8,
+        height: 8,
+        channels: 3,
+        background: 'red'
+      }
+    })
+      .withMetadata({
+        density: 96
+      })
+      .png()
+      .toBuffer();
+
+    const { density } = await sharp(data).metadata();
+    assert.strictEqual(density, 96);
+  });
+
   it('chromaSubsampling 4:4:4:4 CMYK JPEG', function () {
     return sharp(fixtures.inputJpgWithCmykProfile)
       .metadata()
@@ -734,6 +770,16 @@ describe('Image metadata', function () {
     it('Too large orientation', function () {
       assert.throws(function () {
         sharp().withMetadata({ orientation: 9 });
+      });
+    });
+    it('Non-numeric density', function () {
+      assert.throws(function () {
+        sharp().withMetadata({ density: '1' });
+      });
+    });
+    it('Negative density', function () {
+      assert.throws(function () {
+        sharp().withMetadata({ density: -1 });
       });
     });
     it('Non string icc', function () {

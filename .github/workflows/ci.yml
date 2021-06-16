@@ -22,7 +22,7 @@ jobs:
             nodejs_version: 14
           - os: ubuntu-20.04
             container: centos:7
-            nodejs_version: 15
+            nodejs_version: 16
           - os: ubuntu-20.04
             container: node:10-alpine3.11
             prebuild: true
@@ -33,7 +33,7 @@ jobs:
           - os: ubuntu-20.04
             container: node:14-alpine3.13
           - os: ubuntu-20.04
-            container: node:15-alpine3.11
+            container: node:16-alpine3.11
           - os: macos-10.15
             nodejs_version: 10
             prebuild: true
@@ -42,7 +42,7 @@ jobs:
           - os: macos-10.15
             nodejs_version: 14
           - os: macos-10.15
-            nodejs_version: 15
+            nodejs_version: 16
           - os: windows-2019
             nodejs_version: 10
             prebuild: true
@@ -51,13 +51,15 @@ jobs:
           - os: windows-2019
             nodejs_version: 14
           - os: windows-2019
-            nodejs_version: 15
+            nodejs_version: 16
     steps:
       - name: Dependencies (Linux glibc)
         if: contains(matrix.container, 'centos')
         run: |
           curl -sL https://rpm.nodesource.com/setup_${{ matrix.nodejs_version }}.x | bash -
-          yum install -y gcc-c++ make git python3 nodejs
+          yum install -y centos-release-scl
+          yum install -y devtoolset-10-gcc-c++ make git python3 nodejs
+          echo "/opt/rh/devtoolset-10/root/usr/bin" >> $GITHUB_PATH
       - name: Dependencies (Linux musl)
         if: contains(matrix.container, 'alpine')
         run: apk add build-base git python3 --update-cache
