@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.29 - *circle*
+
+Requires libvips v8.11.0
+
+### v0.29.0 - TBD
+
+* Drop support for Node.js 10, now requires Node.js >= 12.13.0.
+
+* Add `compression` property to HEIF image metadata.
+  [#2504](https://github.com/lovell/sharp/issues/2504)
+
+* AVIF encoding now defaults to `4:4:4` chroma subsampling.
+  [#2562](https://github.com/lovell/sharp/issues/2562)
+
+* Allow multiple platform-arch binaries in same `node_modules` installation tree.
+  [#2575](https://github.com/lovell/sharp/issues/2575)
+
 ## v0.28 - *bijou*
 
 Requires libvips v8.10.6

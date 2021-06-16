@@ -138,14 +138,10 @@ To install the prebuilt libvips binaries from a custom URL,
 set the `sharp_libvips_binary_host` npm config option
 or the `npm_config_sharp_libvips_binary_host` environment variable.
 
-The version subpath and file name are appended to these. There should be tarballs available
-that are compressed with both gzip and Brotli, as the format downloaded will vary depending
-on whether the user's version of Node supports Brotli decompression (Node.js v10.16.0+)
-
+The version subpath and file name are appended to these.
 For example, if `sharp_libvips_binary_host` is set to `https://hostname/path`
 and the libvips version is `1.2.3` then the resultant URL will be
-`https://hostname/path/v1.2.3/libvips-1.2.3-platform-arch.tar.br` or 
-`https://hostname/path/v1.2.3/libvips-1.2.3-platform-arch.tar.gz`.
+`https://hostname/path/v1.2.3/libvips-1.2.3-platform-arch.tar.br`.
 
 See the Chinese mirror below for a further example.
 
@@ -210,30 +206,16 @@ to `false` when using the `yarn` package manager.
 
 ## AWS Lambda
 
-The binaries in the `node_modules` directory of the
+The `node_modules` directory of the
 [deployment package](https://docs.aws.amazon.com/lambda/latest/dg/nodejs-package.html)
-must be for the Linux x64 platform.
+must include binaries for the Linux x64 platform.
 
 When building your deployment package on machines other than Linux x64 (glibc),
-run the following commands:
+run the following additional command after `npm install`:
 
-macOS:
 ```sh
-rm -rf node_modules/sharp
+npm install
 SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install --arch=x64 --platform=linux sharp
-```
-
-Windows:
-```sh
-rmdir /s /q node_modules/sharp
-npm install --arch=x64 --platform=linux sharp
-```
-
-Alternatively a Docker container closely matching the Lambda runtime can be used:
-
-```sh
-rm -rf node_modules/sharp
-docker run -v "$PWD":/var/task lambci/lambda:build-nodejs12.x npm install sharp
 ```
 
 To get the best performance select the largest memory available.

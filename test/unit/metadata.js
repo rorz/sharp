@@ -247,7 +247,7 @@ describe('Image metadata', function () {
       assert.strictEqual('undefined', typeof metadata.size);
       assert.strictEqual(800, metadata.width);
       assert.strictEqual(533, metadata.height);
-      assert.strictEqual(true, [3, 4].includes(metadata.channels)); // libvips 8.11.0 = 4
+      assert.strictEqual(4, metadata.channels);
       assert.strictEqual('uchar', metadata.depth);
       assert.strictEqual('undefined', typeof metadata.density);
       assert.strictEqual('undefined', typeof metadata.chromaSubsampling);
@@ -266,7 +266,7 @@ describe('Image metadata', function () {
       assert.strictEqual('undefined', typeof metadata.size);
       assert.strictEqual(2, metadata.width);
       assert.strictEqual(1, metadata.height);
-      assert.strictEqual(true, [2, 4].includes(metadata.channels)); // libvips 8.11.0 = 4
+      assert.strictEqual(4, metadata.channels);
       assert.strictEqual('uchar', metadata.depth);
       assert.strictEqual('undefined', typeof metadata.density);
       assert.strictEqual('undefined', typeof metadata.chromaSubsampling);
@@ -320,7 +320,7 @@ describe('Image metadata', function () {
         assert.strictEqual(isProgressive, false);
         assert.strictEqual(pages, 10);
         assert.strictEqual(pageHeight, 285);
-        assert.strictEqual(true, [2, 3].includes(loop)); // libvips 8.11.0 = 2
+        assert.strictEqual(loop, 2);
         assert.deepStrictEqual(delay, [...Array(9).fill(3000), 15000]);
         assert.strictEqual(hasProfile, false);
         assert.strictEqual(hasAlpha, true);
@@ -723,6 +723,25 @@ describe('Image metadata', function () {
         assert.strictEqual(metadata.tifftagPhotoshop.length, 6634);
       })
   );
+
+  it('AVIF', async () => {
+    const metadata = await sharp(fixtures.inputAvif).metadata();
+    assert.deepStrictEqual(metadata, {
+      format: 'heif',
+      width: 2048,
+      height: 858,
+      space: 'srgb',
+      channels: 3,
+      depth: 'uchar',
+      isProgressive: false,
+      pages: 1,
+      pageHeight: 858,
+      pagePrimary: 0,
+      compression: 'av1',
+      hasProfile: false,
+      hasAlpha: false
+    });
+  });
 
   it('File input with corrupt header fails gracefully', function (done) {
     sharp(fixtures.inputJpgWithCorruptHeader)
