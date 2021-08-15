@@ -127,17 +127,23 @@ namespace sharp {
     }
     // Create new image with text
     if (HasAttr(input, "textValue")) {
+      g_printf("Setting text image properties");
       descriptor->textValue = AttrAsStr(input, "textValue");
-      descriptor->textWidth = AttrAsUint32(input, "textWidth");
-      descriptor->textHeight = AttrAsUint32(input, "textHeight");
-      descriptor->textAlign = static_cast<VipsAlign>(vips_enum_from_nick(nullptr, VIPS_TYPE_ALIGN, AttrAsStr(input, "textAlign").data()));
-      descriptor->textForeground = AttrAsVectorOfDouble(input, "textForeground");
-      descriptor->textBackground = AttrAsVectorOfDouble(input, "textBackground");
       descriptor->textFont = AttrAsStr(input, "textFont");
       descriptor->textFontfile = AttrAsStr(input, "textFontfile");
+      descriptor->textWidth = AttrAsUint32(input, "textWidth");
+      descriptor->textHeight = AttrAsUint32(input, "textHeight");
+      g_printf("Pre-align");
+      descriptor->textAlign = static_cast<VipsAlign>(vips_enum_from_nick(nullptr, VIPS_TYPE_ALIGN, AttrAsStr(input, "textAlign").data()));
+      g_printf("Post-align");
+      // descriptor->textForeground = AttrAsVectorOfDouble(input, "textForeground");
+      // descriptor->textBackground = AttrAsVectorOfDouble(input, "textBackground");
       descriptor->textJustify = AttrAsBool(input, "textJustify");
+      g_printf("Post-justify");
       descriptor->textDpi = AttrAsUint32(input, "textDpi");
-      descriptor->textLineSpacing = AttrAsUint32(input, "textLineSpacing");
+      g_printf("Post-dpi");
+      descriptor->textSpacing = AttrAsUint32(input, "textSpacing");
+      g_printf("End of Setting text image properties");
     }
     // Limit input images to a given number of pixels, where pixels = width * height
     descriptor->limitInputPixels = AttrAsUint32(input, "limitInputPixels");
@@ -395,14 +401,19 @@ namespace sharp {
         imageType = ImageType::RAW;
       } else if (descriptor->textValue.length() > 0) {
         // Create a new image with text
+        g_printf("Going to make a text image");
         vips::VOption *textOptions = VImage::option()
-          ->set("font", const_cast<char*>(descriptor->textFont.data()))
           ->set("height", descriptor->textHeight)
           ->set("align", descriptor->textAlign)
           ->set("justify", descriptor->textJustify)
-          ->set("spacing", descriptor->textLineSpacing);
+          ->set("spacing", descriptor->textSpacing)
+          ->set("rgba", TRUE);
         if (descriptor->textWidth > 0) {
           textOptions->set("width", descriptor->textWidth);
+        }
+        if (descriptor->textFont.length() > 0) {
+          textOptions->set("font", const_cast<char *>
+          (descriptor->textFont.data()));
         }
         if (descriptor->textFontfile.length() > 0) {
           textOptions->set("fontfile", const_cast<char*>(descriptor->textFontfile.data()));
@@ -410,32 +421,37 @@ namespace sharp {
         if (descriptor->textDpi > 0) {
           textOptions->set("dpi", descriptor->textDpi);
         }
-        VImage textMask = VImage::new_memory().text(const_cast<char *>(descriptor->textValue.data()), textOptions);
-        // TODO(@rorz): Optional alpha channel
-        std::vector<double> background = {
-          descriptor->textBackground[0],
-          descriptor->textBackground[1],
-          descriptor->textBackground[2],
-          descriptor->textBackground[3],
-        };
-        int xOffset = 0;
-        if (descriptor->textWidth > 0 && descriptor->textAlign != VIPS_ALIGN_LOW) {
-          xOffset = (descriptor->textWidth - textMask.width()) * (descriptor->textAlign == VIPS_ALIGN_CENTRE ? 0.5 : 1);
-        }
-        int width = descriptor->textWidth > 0 ? descriptor->textWidth : textMask.width();
-        textMask = textMask.embed(xOffset, 0.0, width, textMask.height());
-        image = textMask.new_from_image(background);
-        // TODO(@rorz): Optional alpha channel
-        std::vector<double> color = {
-          descriptor->textForeground[0],
-          descriptor->textForeground[1],
-          descriptor->textForeground[2],
-          descriptor->textForeground[3],
-        };
-        VImage colorMask = image.new_from_image(color);
-        image = textMask.ifthenelse(colorMask, image, VImage::option()->set("blend", TRUE));
+        image = VImage::new_memory().text(const_cast<char *>(descriptor->textValue.data()), textOptions);
+        g_printf("\n");
+        g_printf(const_cast<char *>(descriptor->textValue.data()));
+        g_printf("\n");
         image.get_image()->Type = VIPS_INTERPRETATION_sRGB;
         imageType = ImageType::RAW;
+        // TODO(@rorz): Optional alpha channel
+        // std::vector<double> background = {
+        //   descriptor->textBackground[0],
+        //   descriptor->textBackground[1],
+        //   descriptor->textBackground[2],
+        //   descriptor->textBackground[3],
+        // };
+        // int xOffset = 0;
+        // if (descriptor->textWidth > 0 && descriptor->textAlign != VIPS_ALIGN_LOW) {
+        //   xOffset = (descriptor->textWidth - textMask.width()) * (descriptor->textAlign == VIPS_ALIGN_CENTRE ? 0.5 : 1);
+        // }
+        // int width = descriptor->textWidth > 0 ? descriptor->textWidth : textMask.width();
+        // textMask = textMask.embed(xOffset, 0.0, width, textMask.height());
+        // image = textMask.new_from_image(background);
+        // TODO(@rorz): Optional alpha channel
+        // std::vector<double> color = {
+        //   descriptor->textForeground[0],
+        //   descriptor->textForeground[1],
+        //   descriptor->textForeground[2],
+        //   descriptor->textForeground[3],
+        // };
+        // VImage colorMask = image.new_from_image(color);
+        // image = textMask.ifthenelse(colorMask, image, VImage::option()->set("blend", TRUE));
+        // image.get_image()->Type = VIPS_INTERPRETATION_sRGB;
+        // imageType = ImageType::RAW;
       } else {
         // From filesystem
         imageType = DetermineImageType(descriptor->file.data());
